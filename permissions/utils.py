@@ -632,6 +632,18 @@ def register_role(name):
     else:
         return False
 
+def register_or_get_role(name):
+    """Registers a role with passed name to the framework. Returns the new
+    role if the registration was successfully, otherwise False.
+
+    **Parameters:**
+
+    name
+        The unique role name.
+    """
+    role, created = Role.objects.get_or_create(name=name)
+    return role
+
 def unregister_role(name):
     """Unregisters the role with passed name.
 
