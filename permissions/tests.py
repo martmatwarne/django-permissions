@@ -15,8 +15,6 @@ from permissions.models import Role
 
 import permissions.utils
 
-User = get_user_model()
-
 
 class BackendTestCase(TestCase):
     """
@@ -28,6 +26,7 @@ class BackendTestCase(TestCase):
             'django.contrib.auth.backends.ModelBackend',
             'permissions.backend.ObjectPermissionsBackend',
         )
+        User = get_user_model()
         
         self.role_1 = permissions.utils.register_role("Role 1")        
         self.user = User.objects.create(username="john")
@@ -48,13 +47,16 @@ class BackendTestCase(TestCase):
 
         result = self.user.has_perm("view", self.page_1)
         self.assertEqual(result, True)
-    
+
+
 class RoleTestCase(TestCase):
     """
     """    
     def setUp(self):
         """
         """
+        User = get_user_model()
+
         self.role_1 = permissions.utils.register_role("Role 1")
         self.role_2 = permissions.utils.register_role("Role 2")
 
@@ -499,6 +501,7 @@ class RoleTestCase(TestCase):
         self.role_1.add_principal(self.user)
         result = self.role_1.get_users()
         self.assertEqual(result, [self.user])
+
 
 class PermissionTestCase(TestCase):
     """
