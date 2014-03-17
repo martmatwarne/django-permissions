@@ -1,7 +1,7 @@
 # django imports
 from django.contrib.flatpages.models import FlatPage
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
-from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase
@@ -14,6 +14,9 @@ from permissions.models import ObjectPermissionInheritanceBlock
 from permissions.models import Role
 
 import permissions.utils
+
+User = get_user_model()
+
 
 class BackendTestCase(TestCase):
     """
