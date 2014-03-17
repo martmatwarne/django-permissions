@@ -429,7 +429,11 @@ def has_permission(obj, user, codename, roles=None):
 
 def list_people_with_permission_local(role, obj):
     ctype = ContentType.objects.get_for_model(obj)
-    return PrincipalRoleRelation.objects.filter(role=role, content_id=obj.id, content_type=ctype)
+    User = get_user_model()
+
+    return User.objects.filter(principalrolerelation_set__role=role,
+                               principalrolerelation_set__content_id=obj.id,
+                               principalrolerelation_set__content_type=ctype)
 
 # Inheritance ################################################################
 
