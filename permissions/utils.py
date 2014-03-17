@@ -2,6 +2,7 @@
 import warnings
 
 # django imports
+from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError
 from django.db import connection
 from django.db.models import Q
@@ -424,6 +425,11 @@ def has_permission(obj, user, codename, roles=None):
             break
 
     return result
+
+
+def list_people_with_permission_local(role, obj):
+    ctype = ContentType.objects.get_for_model(obj)
+    return PrincipalRoleRelation.objects.filter(role=role, content_id=obj.id, content_type=ctype)
 
 # Inheritance ################################################################
 
