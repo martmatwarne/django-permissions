@@ -1,8 +1,14 @@
 # django imports
 from django import template
+from django.contrib.contenttypes.models import ContentType
 
 import permissions.utils
+
+from ..models import ObjectPermission
+from ..utils import get_roles
+
 register = template.Library()
+
 
 class PermissionComparisonNode(template.Node):
     """Implements a node to provide an if current user has passed permission 
@@ -38,9 +44,21 @@ class PermissionComparisonNode(template.Node):
         else:
             return self.nodelist_false
 
+
 @register.tag
 def ifhasperm(parser, token):
     """This function provides functionality for the 'ifhasperm' template tag.
     """
     return PermissionComparisonNode.handle_token(parser, token)
 
+
+@register.filter
+def object_permissions(user, obj):
+
+    ctype = ContentType.objects.get_for_model(obj)
+    roles = get_roles(user, obj)
+
+    return ObjectPermission.objects.filter(
+        content_type=ctype,
+        content_id=obj.id,
+        role__in=roles).values_list("permission__codename", flat=True)
