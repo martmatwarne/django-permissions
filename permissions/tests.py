@@ -15,6 +15,8 @@ from permissions.models import Role
 
 import permissions.utils
 
+User = get_user_model()
+
 
 class BackendTestCase(TestCase):
     """
@@ -26,10 +28,9 @@ class BackendTestCase(TestCase):
             'django.contrib.auth.backends.ModelBackend',
             'permissions.backend.ObjectPermissionsBackend',
         )
-        User = get_user_model()
         
         self.role_1 = permissions.utils.register_role("Role 1")        
-        self.user = User.objects.create(username="john")
+        self.user = User.objects.create(email="john")
         self.page_1 = FlatPage.objects.create(url="/page-1/", title="Page 1")
         self.view = permissions.utils.register_permission("View", "view")
         
@@ -55,12 +56,10 @@ class RoleTestCase(TestCase):
     def setUp(self):
         """
         """
-        User = get_user_model()
-
         self.role_1 = permissions.utils.register_role("Role 1")
         self.role_2 = permissions.utils.register_role("Role 2")
 
-        self.user = User.objects.create(username="john")
+        self.user = User.objects.create(email="john")
         self.group = Group.objects.create(name="brights")
 
         self.user.groups.add(self.group)
@@ -103,7 +102,7 @@ class RoleTestCase(TestCase):
         result = permissions.utils.get_user(42)
         self.assertEqual(result, None)
 
-        result = permissions.utils.get_user(self.user.username)
+        result = permissions.utils.get_user(self.user.email)
         self.assertEqual(result, self.user)
 
         result = permissions.utils.get_user("Not Existing")
@@ -425,15 +424,15 @@ class RoleTestCase(TestCase):
         self.assertEqual(result, True)
 
         result = self.role_1.get_users()
-        self.assertEqual(result[0].username, "john")
+        self.assertEqual(result[0].email, "john")
 
         # Add another role to an user
-        self.user_2 = User.objects.create(username="jane")
+        self.user_2 = User.objects.create(email="jane")
         result = permissions.utils.add_role(self.user_2, self.role_1)
 
         result = self.role_1.get_users()
-        self.assertEqual(result[0].username, "john")
-        self.assertEqual(result[1].username, "jane")
+        self.assertEqual(result[0].email, "john")
+        self.assertEqual(result[1].email, "jane")
         self.assertEqual(len(result), 2)
 
         # Add the role to an user
@@ -442,8 +441,8 @@ class RoleTestCase(TestCase):
 
         # This shouldn't have an effect on the result
         result = self.role_1.get_users()
-        self.assertEqual(result[0].username, "john")
-        self.assertEqual(result[1].username, "jane")
+        self.assertEqual(result[0].email, "john")
+        self.assertEqual(result[1].email, "jane")
         self.assertEqual(len(result), 2)
 
     def test_get_users_2(self):
@@ -456,15 +455,16 @@ class RoleTestCase(TestCase):
         self.assertEqual(result, True)
 
         result = self.role_1.get_users(self.page_1)
-        self.assertEqual(result[0].username, "john")
+        self.assertEqual(result[0].email, "john")
 
         # Add another local role to an user
-        self.user_2 = User.objects.create(username="jane")
+        self.user_2 = User(email="jane")
+        self.user_2.save()
         result = permissions.utils.add_local_role(self.page_1, self.user_2, self.role_1)
 
         result = self.role_1.get_users(self.page_1)
-        self.assertEqual(result[0].username, "john")
-        self.assertEqual(result[1].username, "jane")
+        self.assertEqual(result[0].email, "john")
+        self.assertEqual(result[1].email, "jane")
 
         # A the global role to user
         result = permissions.utils.add_role(self.user, self.role_1)
@@ -472,13 +472,13 @@ class RoleTestCase(TestCase):
 
         # Nontheless there are just two users returned (and no duplicate)
         result = self.role_1.get_users(self.page_1)
-        self.assertEqual(result[0].username, "john")
-        self.assertEqual(result[1].username, "jane")
+        self.assertEqual(result[0].email, "john")
+        self.assertEqual(result[1].email, "jane")
         self.assertEqual(len(result), 2)
 
         # Andere there should one user for the global role
         result = self.role_1.get_users()
-        self.assertEqual(result[0].username, "john")
+        self.assertEqual(result[0].email, "john")
 
         # Add the role to an group
         result = permissions.utils.add_local_role(self.page_1, self.group, self.role_1)
@@ -486,8 +486,8 @@ class RoleTestCase(TestCase):
 
         # This shouldn't have an effect on the result
         result = self.role_1.get_users(self.page_1)
-        self.assertEqual(result[0].username, "john")
-        self.assertEqual(result[1].username, "jane")
+        self.assertEqual(result[0].email, "john")
+        self.assertEqual(result[1].email, "jane")
         self.assertEqual(len(result), 2)
         
     def test_get_users_3(self):
@@ -512,7 +512,7 @@ class PermissionTestCase(TestCase):
         self.role_1 = permissions.utils.register_role("Role 1")
         self.role_2 = permissions.utils.register_role("Role 2")
 
-        self.user = User.objects.create(username="john")
+        self.user = User.objects.create(email="john")
         permissions.utils.add_role(self.user, self.role_1)
         self.user.save()
 
@@ -572,7 +572,7 @@ class PermissionTestCase(TestCase):
     def test_has_permission_owner(self):
         """
         """
-        creator = User.objects.create(username="jane")
+        creator = User.objects.create(email="jane")
 
         result = permissions.utils.has_permission(self.page_1, creator, "view")
         self.assertEqual(result, False)
@@ -765,7 +765,6 @@ class RegistrationTestCase(TestCase):
 
 # django imports
 from django.core.handlers.wsgi import WSGIRequest
-from django.contrib.auth.models import User
 from django.contrib.sessions.backends.file import SessionStore
 from django.test.client import Client
 

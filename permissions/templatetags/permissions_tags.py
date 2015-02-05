@@ -54,9 +54,22 @@ def ifhasperm(parser, token):
 
 @register.filter
 def object_permissions(user, obj):
+    # print 'here'
+    # print user
+    # print obj
 
     ctype = ContentType.objects.get_for_model(obj)
+
+    #print 'after ctype'
+
     roles = get_roles(user, obj)
+
+    # print 'after roles'
+
+    # print 'ctype'
+    # print ctype
+    # print 'roles'
+    # print roles
 
     return ObjectPermission.objects.filter(
         content_type=ctype,

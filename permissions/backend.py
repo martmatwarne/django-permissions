@@ -19,7 +19,7 @@ class ObjectPermissionsBackend(object):
     supports_object_permissions = True
     supports_anonymous_user = True
 
-    def authenticate(self, username, password):
+    def authenticate(self, email, password):
         return None
 
     def has_permission(self, user_obj, perm, obj=None):
